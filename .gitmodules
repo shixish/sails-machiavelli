@@ -1,0 +1,3 @@
+[submodule "playingCards"]
+	path = assets/playingCards
+	url = https://github.com/atomantic/JavaScript-Playing-Cards.git
