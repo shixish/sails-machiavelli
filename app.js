@@ -1,3 +1,6 @@
+//NOTICE: you can run this app using forever module:
+//  forever -w start app.js
+
 /**
  * app.js
  *

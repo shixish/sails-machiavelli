@@ -1,4 +1,89 @@
 <div id="container">
+    <div id="controls"></div>
+    <ul id="hand"></ul>
+
+    <script>
+    // $.get('/api/create', function(data){
+    //     console.log("worked!", data);
+    // });
+
+    $(document).ready(function(){
+        var game, user;
+
+        var $controls = $('#controls'),
+            $hand = $('#hand');
+
+        // $hand.on('click', 'li', function(e){
+        //     var idx = $(this).index();
+        //     console.log(idx);
+        //     dropCard(idx);
+        // });
+
+        function createGame(){
+            io.socket.get("/api/create", function (data) {
+                game = data;
+                user = game.users[0];
+                console.log("Game:", game);
+                
+                $('<a href="#">Draw a card</a>').click(function(e){
+                    drawCard();
+                }).appendTo($controls);
+
+                $('<a href="#">Get User Data</a>').click(function(e){
+                    getUserData(user.uuid);
+                }).appendTo($controls);
+            });
+        }
+
+        function drawCard(){
+            io.socket.get("/api/"+game.uuid+'/'+user.uuid+"/draw", function (card) {
+                console.log("Card:", card);
+                user.hand.push(card);
+                updateHand(card);
+            });
+        }
+
+        function dropCard(card_idx){
+            if (user.hand[card_idx])
+            io.socket.get("/api/"+game.uuid+'/'+user.uuid+"/drop/"+card_idx, function (card) {
+                // delete user.hand[card_idx];
+                user.hand.splice(card_idx, 1);
+                updateHand(card);
+                console.log("Dropping Card:", card, "/api/"+game.uuid+'/'+user.uuid+"/drop/"+card_idx);
+            });
+        }
+
+        function getUserData(uuid){
+            io.socket.get("/api/"+game.uuid+'/'+user.uuid+"/", function (user) {
+                console.log("User:", user);
+            });
+        }
+
+        function updateHand(){
+            html = '';
+            $hand.html('');
+            for (var i in user.hand){
+                var $card = $(cardTemplate(user.hand[i]));
+
+                (function(idx){
+                    $card.click(function(e){
+                        // var idx = $(this).index();
+                        // console.log(idx);
+                        dropCard(idx);
+                    }).appendTo($hand);
+                })(i);
+            }
+        }
+
+        function cardTemplate(card){
+            return '<li><a href="#">' + card.value + " of " + card.suite + "</a></li>";
+        }
+
+        createGame();
+        
+    });
+    </script>
+
     <div id="error"></div>
     <input type="button" id="shuffler" value="shuffle" />
     <input type="button" id="draw" value="draw a card" />
