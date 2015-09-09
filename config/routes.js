@@ -39,10 +39,10 @@ module.exports.routes = {
   '/api/list': 'MachiavelliController.list',
   '/api/create': 'MachiavelliController.create_game',
   // '/api/:id': 'MachiavelliController.deck',
-  '/api/:id/:user_id': 'MachiavelliController.user',
   '/api/:id/:user_id/hand': 'MachiavelliController.hand',
   '/api/:id/:user_id/draw': 'MachiavelliController.draw',
   '/api/:id/:user_id/drop/:card_idx': 'MachiavelliController.drop',
+  '/api/:id/:user_id': 'MachiavelliController.user',
   '/api/:id': 'MachiavelliController.game',
 
   /***************************************************************************

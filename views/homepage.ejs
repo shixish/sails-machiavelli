@@ -1,6 +1,7 @@
 <div id="container">
     <div id="controls"></div>
     <ul id="hand"></ul>
+    <ul id="board"></ul>
 
     <script>
     // $.get('/api/create', function(data){
@@ -11,7 +12,8 @@
         var game, user;
 
         var $controls = $('#controls'),
-            $hand = $('#hand');
+            $hand = $('#hand'),
+            $board = $('#board');
 
         // $hand.on('click', 'li', function(e){
         //     var idx = $(this).index();
@@ -25,12 +27,15 @@
                 user = game.users[0];
                 console.log("Game:", game);
                 
-                $('<a href="#">Draw a card</a>').click(function(e){
+                $('<button>Draw a card</button>').click(function(e){
                     drawCard();
                 }).appendTo($controls);
 
-                $('<a href="#">Get User Data</a>').click(function(e){
+                $('<button>Get User Data</button>').click(function(e){
                     getUserData(user.uuid);
+                }).appendTo($controls);
+                $('<button>Get Game Data</button>').click(function(e){
+                    getGameData(user.uuid);
                 }).appendTo($controls);
             });
         }
@@ -45,11 +50,12 @@
 
         function dropCard(card_idx){
             if (user.hand[card_idx])
-            io.socket.get("/api/"+game.uuid+'/'+user.uuid+"/drop/"+card_idx, function (card) {
+            io.socket.get("/api/"+game.uuid+'/'+user.uuid+"/drop/"+card_idx, function (pile_state) {
                 // delete user.hand[card_idx];
                 user.hand.splice(card_idx, 1);
-                updateHand(card);
-                console.log("Dropping Card:", card, "/api/"+game.uuid+'/'+user.uuid+"/drop/"+card_idx);
+                updateHand();
+                updateBoard(pile_state)
+                console.log("Dropped card. ", pile_state, "/api/"+game.uuid+'/'+user.uuid+"/drop/"+card_idx);
             });
         }
 
@@ -59,19 +65,35 @@
             });
         }
 
+        function getGameData(uuid){
+            io.socket.get("/api/"+game.uuid, function (ugame) {
+                console.log("Game:", ugame);
+            });
+        }
+
         function updateHand(){
             html = '';
             $hand.html('');
             for (var i in user.hand){
-                var $card = $(cardTemplate(user.hand[i]));
-
                 (function(idx){
+                    var $card = $(cardTemplate(user.hand[idx]));
                     $card.click(function(e){
-                        // var idx = $(this).index();
-                        // console.log(idx);
                         dropCard(idx);
                     }).appendTo($hand);
                 })(i);
+            }
+        }
+
+        function updateBoard(pile_state){
+            $.extend(game.piles, pile_state);
+            html = '';
+            $board.html('');
+            for (var i in game.piles){
+                var $pile = $('<ul id="pile-'+i+'" class="pile">');
+                for (var c in game.piles[i]){
+                    $(cardTemplate(game.piles[i][c])).appendTo($pile);
+                }
+                $pile.appendTo($board);
             }
         }
 
@@ -83,6 +105,8 @@
         
     });
     </script>
+    <br>
+    <br>
 
     <div id="error"></div>
     <input type="button" id="shuffler" value="shuffle" />
