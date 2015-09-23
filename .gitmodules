@@ -3,4 +3,4 @@
 	url = https://github.com/atomantic/JavaScript-Playing-Cards.git
 [submodule "assets/deck-of-cards"]
 	path = assets/deck-of-cards
-	url = git@github.com:pakastin/deck-of-cards.git
+	url = https://github.com/pakastin/deck-of-cards.git
