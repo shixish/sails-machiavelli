@@ -1,0 +1,1 @@
+start forever logs app.js -f

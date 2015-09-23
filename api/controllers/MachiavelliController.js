@@ -4,12 +4,19 @@ var cards = require('cards'),
 	Deck = cards.Deck, Card = cards.Card, Pile = cards.Pile;
 
 function UserData(name){
+	var next_index = 0;
 	this.uuid = uuid.v4();
 	this.name = name;
 	this.hand = new Pile();
-}
-UserData.prototype.addCard = function (card){
-	this.hand.push(card);
+
+	this.addCard = function(card){
+		// var index = next_index++;
+		// card.index = index;
+		// // this.hand[index] = card;
+		// console.log(index);
+		// // return index;
+		this.hand.push(card);
+	}
 }
 // UserData.prototype.getHand = function (card){
 // 	var json = [];
@@ -36,9 +43,6 @@ function GameData(){
 	this.timestamp = new Date();
 	this.pile_data = [];
 	this.user_data = {};
-
-	this.addUser(new UserData('Jack'));
-	this.addUser(new UserData('Jill'));
 
 	GameStorage[this.uuid] = this;
 }
@@ -81,7 +85,7 @@ GameData.prototype.getUser = function (user_id){
 GameData.prototype.users = function (){
 	var json = [];
 	for (var i in this.user_data){
-		json.push(this.user_data[i].toJSON());
+		json.push(this.user_data[i].name);//toJSON()
 	}
 	return json;
 }
@@ -96,7 +100,7 @@ GameData.prototype.toJSON = function(){
 	return {
 		"uuid": this.uuid,
 		"timestamp": this.timestamp,
-		"length": this.deck.size(),
+		"size": this.deck.size(),
 		"piles": this.piles(),
 		"users": this.users(),
 	}
@@ -118,7 +122,7 @@ module.exports = {
 	game: function (req, res){
 		try{
 			var game = getGameData(req.param('id'));
-				return res.send(game.toJSON());
+			return res.send(game.toJSON());
 		}catch(e){
 			return res.send(errorResponse(e.message));
 		}
@@ -127,6 +131,22 @@ module.exports = {
 		var game = new GameData();
 		return res.send(game.toJSON());
 		// return res.redirect('/api/' + game.uuid);
+	},
+	new_user: function (req, res){
+		// if (!req.param('name')){
+
+		// }
+		try{
+			var game = getGameData(req.param('id')),
+				name = req.param('name'),
+				user = new UserData(name);
+
+			game.addUser(user);
+			// this.addUser(new UserData('Jill'));
+			return res.send(user.toJSON());
+		}catch(e){
+			return res.send(errorResponse(e.message));
+		}
 	},
 	// deck: function (req, res){
 	// 	var game = getGameData(req.param('id'));
@@ -200,7 +220,7 @@ module.exports = {
 
 cards.generators.doubleDeck = function(deck) {
 	for (var i = 0; i < 2; i++){
-		['club', 'diamond', 'heart', 'spade'].forEach(function(suit) {
+		['C', 'D', 'H', 'S'].forEach(function(suit) {
 			[2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K', 'A'].forEach(function(value) {
 				deck.add(new Card(suit, value));
 			});
@@ -214,6 +234,7 @@ cards.Card.prototype.toJSON = function(){
 	return {
 		'suite': this.suit,
 		'value': this.value,
+		// 'index': this.index,
 	};
 }
 

@@ -1,160 +1,266 @@
-/*global playingCards*/
-/*jslint jquery:true */
-
-/**
- * playingCards.ui is a UI utility library extension of the playingCard.js library
- * This contains methods to render the cards and apply effects.
- * 
- * @requires playingCards.js
- * @requires playingCards.ui.css
- * 
- * @author Copyright (c) 2010 Adam Eivy (antic | atomantic)
- * @license Dual licensed under the MIT and GPL licenses:
- *   http://www.opensource.org/licenses/mit-license.php
- *   http://www.gnu.org/licenses/gpl.html
- */
 playingCards.card.defaults.imgPrefix = 'playingCards/';
-(function($,window,document,undefined) {    
-    var Machiavelli = window.Machiavelli = function(){
-        
+
+$(document).ready(function(){
+  var game, user;
+
+  var $controls = $('#controls'),
+      $hand = $('#hand'),
+      $board = $('#board'),
+      $name = $('#name');
+
+  // $hand.on('click', 'li', function(e){
+  //     var idx = $(this).index();
+  //     console.log(idx);
+  //     dropCard(idx);
+  // });
+
+  
+  /**
+   * GAME
+   */
+  var Game = function(data){
+    this.uuid = data.uuid;
+    this.piles = [];
+    this.updatePiles(data.piles);
+    this.timestamp = data.timestamp;
+    this.users = data.users;
+    this.size = data.size;
+    // for (var i in data){
+    //   this[i] = data[i];
+    // }
+  }
+
+  Game.prototype.getGameData = function(){
+    io.socket.get('/api/'+this.uuid, function (game) {
+      console.log("Game:", game);
+    });
+  }
+
+  Game.prototype.updatePiles = function(pile_data){
+    for (var p in pile_data){
+      this.piles[p] = new Pile(pile_data[p]);
     }
+  }
 
 
-    if ($.fn) {
-         // we can use library methods
-         // attach this as an extension to the library
-         $.fn.playingCards = playingCards;
+  /**
+   * CARD
+   */
+  var Card = function(data){
+    // for (var i in data){
+    //   this[i] = data[i];
+    // }
+    this.value = data.value;
+    this.suite = data.suite;
+    this.rank_name = playingCards.defaults.ranks[this.value];
+    this.suite_name = playingCards.defaults.suits[this.suite];
+    this.ui = new playingCards.card(this.value, this.rank_name, this.suite, this.suite_name);
+  }
+  // Card.prototype.id = function(){
+  //   return 'i'+this.index;//'c' + this.suite + this.value + 
+  // }
+  Card.prototype.getHTML = function(){
+    return $(this.ui.getHTML());
+  }
+
+
+  /**
+   * PILE
+   */
+  var Pile = function(data) {
+    for (var i in data){
+      this[i] = new Card(data[i]);
     }
-    /*
-     * requires jquery (currently)
-     */
-    playingCards.prototype.spread = function(dest) {
-        if (!this.conf.el && !dest) {
-            return false;
-        }
-        var to = this.conf.el || dest,
-            l = this.cards.length,
-            i;
-        to.html('');
-        // clear (just a demo)
-        for (i = 0; i < l; i++) {
-            to.append(this.cards[i].getHTML());
-        }
-    };
-    /**
-     * generate (and cache) html for the card
-     * 
-     * @return string The HTML block to show the card
-     */
-    playingCards.card.prototype.getHTML = function() {
-        if (this.html) {
-            return this.html;
-        }
-        this.suitCode = "&nbsp;";
-        this.colorCls = '';
-        switch (this.suit) {
-        case "S":
-            this.suitCode = "&spades;";
-            break;
-        case "D":
-            this.colorCls = "red";
-            this.suitCode = "&diams;";
-            break;
-        case "C":
-            this.suitCode = "&clubs;";
-            break;
-        case "H":
-            this.colorCls = "red";
-            this.suitCode = "&hearts;";
-            break;
-        }
+  };
+  Pile.prototype = [];
 
-        // concatenating strings with "+" is slow, using array join is faster: http://code.google.com/speed/articles/optimizing-javascript.html
-        // TODO: run perf test to be sure that in this case we are getting better perf in IE
-        var txt = this.rank;
-        if (this.rank === "N") {
-            txt = this.rankString.split('').join('<br />');
-        }
-        var strBuild = ['<div class="playingCard"><div class="front ', this.colorCls, '"><div class="corner">', txt, '<br />', this.suitCode, '</div>'];
-        strBuild = strBuild.concat(this.buildIconHTML());
-        strBuild = strBuild.concat('<div class="corner cornerBR flip">', txt, '<br />', this.suitCode, '</div></div></div>');
-        this.html = strBuild.join('');
-        return this.html;
-    };
-    /**
-      * build the middle of the playing card HTML
-     *
-     * @return string The HTML block for the middle of the card
-      */
-    playingCards.card.prototype.buildIconHTML = function() {
-        // TODO: could we optimize this with a for loop that breaks/continues to named positions?
-        if (this.rank === "A") {
-            return ['<div class="suit suit0">', this.suitCode, '</div>'];
-        }
-        if (this.rank === "J" || this.rank === "Q" || this.rank === "K" || this.rank === "N") {
-            var n = 'D';
-            var imgPrefix = this.conf.imgPrefix || '';
-            if (!this.conf.singleFace) {
-                n = this.suit;
-            }
-            return [
-            '<div class="suit A1">', this.suitCode, '</div>',
-            '<img class="suit ', this.rank, ' face" src="', imgPrefix, 'img/', this.rank, n, '.gif"/>',
-            '<div class="suit C5 flip">', this.suitCode, '</div>'
-            ];
-        }
-        var ret = [],
-            list = ['4', '5', '6', '7', '8', '9', '10'];
-        // all of these will have A1, A5, C1, C5 icons
-        if (list.indexOf(this.rank) !== -1) {
-            ret = ret.concat([
-            '<div class="suit A1">', this.suitCode, '</div>',
-            '<div class="suit A5 flip">', this.suitCode, '</div>',
-            '<div class="suit C1">', this.suitCode, '</div>',
-            '<div class="suit C5 flip">', this.suitCode, '</div>'
-            ]);
-        }
-        list = ['2', '3'];
-        if (list.indexOf(this.rank) !== -1) {
-            ret = ret.concat([
-            '<div class="suit B1">', this.suitCode, '</div>',
-            '<div class="suit B5 flip">', this.suitCode, '</div>'
-            ]);
-        }
-        list = ['3', '5', '9'];
-        if (list.indexOf(this.rank) !== -1) {
-            ret = ret.concat([
-            '<div class="suit B3">', this.suitCode, '</div>'
-            ]);
-        }
-        list = ['6', '7', '8'];
-        if (list.indexOf(this.rank) !== -1) {
-            ret = ret.concat([
-            '<div class="suit A3">', this.suitCode, '</div>',
-            '<div class="suit C3">', this.suitCode, '</div>'
-            ]);
-        }
-        list = ['7', '8', '10'];
-        if (list.indexOf(this.rank) !== -1) {
-            ret = ret.concat([
-            '<div class="suit B2">', this.suitCode, '</div>'
-            ]);
-        }
-        list = ['8', '10'];
-        if (list.indexOf(this.rank) !== -1) {
-            ret = ret.concat([
-            '<div class="suit B4 flip">', this.suitCode, '</div>'
-            ]);
-        }
-        list = ['9', '10'];
-        if (list.indexOf(this.rank) !== -1) {
-            ret = ret.concat([
-            '<div class="suit A2">', this.suitCode, '</div>',
-            '<div class="suit A4 flip">', this.suitCode, '</div>',
-            '<div class="suit C2">', this.suitCode, '</div>',
-            '<div class="suit C4 flip">', this.suitCode, '</div>'
-            ]);
-        }
-        return ret;
-    };
-})(typeof(jQuery) !== 'undefined' ? jQuery: function(){},this,this.document);
+  /**
+   * USER
+   */
+  function User(data){
+    // this.data = data;
+    for (var i in data){
+      this[i] = data[i];
+    }
+  }
+  User.prototype.drawCard = function(callback){
+    var user = this;
+    io.socket.get('/api/'+game.uuid+'/'+user.uuid+'/draw', function (card) {
+      console.log("Card:", card);
+      card = new Card(card);
+      user.hand.push(card);
+      if (callback) callback(card);
+    });
+  }
+
+  User.prototype.getUserData = function(){
+    var _this = this;
+    io.socket.get('/api/'+game.uuid+'/'+this.uuid+'/', function (user) {
+      console.log("User:", user);
+    });
+  }
+
+  User.prototype.dropCard = function(card_idx, callback){
+    if (user.hand[card_idx])
+    io.socket.get('/api/'+game.uuid+'/'+user.uuid+"/drop/"+card_idx, function (pile_state) {
+      // delete user.hand[card_idx];
+      var card = user.hand.splice(card_idx, 1)[0];
+      
+      if (callback) callback(card, pile_state);
+    });
+  }
+
+
+  /**
+   * UI FUNCTIONS
+   */
+
+  $hand.on('click', '.playingCard', function(){
+    // console.log('derp');
+    var $this = $(this);
+    var index = $this.index();//$this.data('index')
+    this.remove();
+    user.dropCard(index, function(card, pile_state){
+      console.log("Dropped card:", card);
+      console.log("Board: ", pile_state);
+      // $card.appendTo($board);
+      // console.log($card);
+      // addCardToBoard(card);
+      updateBoard(pile_state);
+    });
+  });
+
+
+  function createGame(){
+    io.socket.get('/api/create', function (data) {
+      window.game = game = new Game(data);
+      console.log("Game:", game);
+      
+      $('<button>Get Game Data</button>').click(function(e){
+        game.getGameData();
+      }).appendTo($controls);
+
+      // $('<button>New User</button>').click(function(e){
+      //   createUser(game, 'Bill');
+      // }).appendTo($controls);
+      createUser(game, 'Bill');
+    });
+  }
+
+  function createUser(game, name){
+    io.socket.get('/api/'+game.uuid+'/new_user/'+name, function (data) {
+      window.user = user = new User(data);
+      console.log(user);
+
+      $('<button>Draw a card</button>').click(function(e){
+        user.drawCard(function (card){
+          var $card = card.getHTML().appendTo($hand);
+        });
+      }).appendTo($controls);
+
+      $('<button>Get User Data</button>').click(function(e){
+        user.getUserData(user.uuid);
+        $hand.html('');
+        user.hand.forEach(function(card){
+          var $card = card.getHTML().appendTo($hand);
+        });
+      }).appendTo($controls);
+    });
+
+  } 
+
+  // function dropCard(card_idx){
+  //   if (user.hand[card_idx])
+  //   io.socket.get('/api/'+game.uuid+'/'+user.uuid+"/drop/"+card_idx, function (pile_state) {
+  //     // delete user.hand[card_idx];
+  //     user.hand.splice(card_idx, 1);
+  //     updateHand();
+  //     updateBoard(pile_state)
+  //     console.log("Dropped card. ", pile_state, '/api/'+game.uuid+'/'+user.uuid+"/drop/"+card_idx);
+  //   });
+  // }
+
+  
+
+  // function updateHand(){
+  //   html = '';
+  //   $hand.html('');
+  //   for (var i in user.hand){
+  //     (function(idx){
+  //       var $card = $(cardTemplate(user.hand[idx]));
+  //       $card.click(function(e){
+  //         dropCard(idx);
+  //       }).appendTo($hand);
+  //     })(i);
+  //   }
+  // }
+
+  function updateBoard(pile_state){
+    game.updatePiles(pile_state);
+    html = '';
+    $board.html('');
+    for (var i in game.piles){
+      var $pile = $('<ul id="pile-'+i+'" class="pile">');
+      for (var c in game.piles[i]){
+        var card = game.piles[i][c];
+        // console.log(card);
+        $('<li>').append(card.getHTML()).appendTo($pile);
+      }
+      $pile.appendTo($board);
+    }
+  }
+
+  // function cardTemplate(card){
+  //   return $('<li>').append(card.getHTML());
+  // }
+
+  createGame();
+  
+});
+
+
+var $board = document.getElementById('fancy-board');
+
+var deck = Deck(false);
+deck.mount($board);
+
+
+// function sortzModule(deck) {
+//   deck.sortz = deck.queued(sortz);
+
+//   function sortz(next, reverse) {
+//     var cards = deck.cards;
+
+//     // cards.sort(function (a, b) {
+//     //   if (reverse) {
+//     //     return a.i - b.i;
+//     //   } else {
+//     //     return b.i - a.i;
+//     //   }
+//     // });
+
+//     // deck.fan();
+
+//     cards.forEach(function (card, i) {
+//       // card.sort(i, function (i) {
+//       //   if (i === cards.length - 1) {
+//       //     next();
+//       //   }
+//       // }, reverse);
+//     });
+//   }
+// }
+// sortzModule(deck);
+
+// deck.intro();
+// deck.sort();
+
+deck.cards.forEach(function (card, i) {
+  card.enableMoving();
+
+  card.$el.addEventListener('mousedown', onTouch);
+  card.$el.addEventListener('touchstart', onTouch);
+
+  function onTouch () {
+  }
+});

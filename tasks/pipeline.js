@@ -29,7 +29,11 @@ var jsFilesToInject = [
   // Dependencies like jQuery, or Angular are brought in here
   'js/dependencies/**/*.js',
 
+  'deck-of-cards/dist/deck.js',//.min
   'playingCards/playingCards.js',
+  'playingCards/playingCards.ui.js',
+
+  // '../node_modules/cards/lib/cards.js',
 
   // All of the rest of your client-side js files
   // will be injected here in no particular order.
