@@ -1,6 +1,21 @@
 playingCards.card.defaults.imgPrefix = 'playingCards/';
 
-/**
+$(document).ready(function(){
+  var game, user;
+
+  var $controls = $('#controls'),
+      $hand = $('#hand'),
+      $board = $('#board'),
+      $name = $('#name');
+
+  // $hand.on('click', 'li', function(e){
+  //     var idx = $(this).index();
+  //     console.log(idx);
+  //     dropCard(idx);
+  // });
+
+  
+  /**
    * GAME
    */
   var Game = function(data){
@@ -91,23 +106,6 @@ playingCards.card.defaults.imgPrefix = 'playingCards/';
       if (callback) callback(card, pile_state);
     });
   }
-
-$(document).ready(function(){
-  var game, user;
-
-  var $controls = $('#controls'),
-      $hand = $('#hand'),
-      $board = $('#board'),
-      $name = $('#name');
-
-  // $hand.on('click', 'li', function(e){
-  //     var idx = $(this).index();
-  //     console.log(idx);
-  //     dropCard(idx);
-  // });
-
-  
-
 
 
   /**

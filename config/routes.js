@@ -32,10 +32,7 @@ module.exports.routes = {
   *                                                                          *
   ***************************************************************************/
 
-  '/': {
-    view: 'homepage'
-  },
-  // '/game/:id': {view: 'game'},
+  
   '/api/list': 'MachiavelliController.list',
   '/api/create': 'MachiavelliController.create_game',
   // '/api/:id': 'MachiavelliController.deck',
@@ -46,7 +43,13 @@ module.exports.routes = {
   '/api/:id/:user_id': 'MachiavelliController.user',
   '/api/:id': 'MachiavelliController.game',
 
-  '/test/': 'CoffeeController.index',
+  //'/test/': 'CoffeeController.index',
+  // '/': {
+  //   view: 'homepage'
+  // },
+  '/:id?': {
+    view: 'homepage'
+  },
 
   /***************************************************************************
   *                                                                          *
