@@ -23,7 +23,8 @@
     "sails": "~0.11.0",
     "sails-disk": "~0.10.0",
     "node-uuid": "^1.4.3",
-    "cards": "https://github.com/shixish/node-cards/archive/0.0.2.tar.gz"
+    "cards": "https://github.com/shixish/node-cards/archive/0.0.2.tar.gz",
+    "sails-mongo": "^0.11.4"
   },
   "scripts": {
     "debug": "node debug app.js",

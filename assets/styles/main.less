@@ -1,13 +1,25 @@
 body {
-  margin-top: 1.0em;
+  // margin-top: 1.0em;
   background-color: #fff;
   font-family: "Helvetica,Arial,FreeSans";
   color: #000000;
+  padding: 0;
+  margin: 0;
+  background: url('/images/background5.jpg')
 }
-#container {
+
+.container {
   margin: 0 auto;
   width: 860px;
 }
+header{
+  background: silver;
+  h1{
+    margin: 0;
+    font-size: 1.3em;
+  }
+}
+
 h1 { font-size: 40px; color: #64052a; margin-bottom: 3px; }
 h1 .small { font-size: 0.4em; }
 h1 a { text-decoration: none }
@@ -22,12 +34,23 @@ hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
 
 
 h2{
-    clear:both;
+  clear:both;
 }
 #error{
-    display:none;color:#f00;border:1px solid #f60;padding:5px;margin:5px;
+  display:none;color:#f00;border:1px solid #f60;padding:5px;margin:5px;
 }
 
 .pile{
   float: left;
+}
+
+
+#lobby{
+  background: white;
+  width: 100%;
+  border: 2px solid gray;
+  padding: 15px;
+  box-shadow: 5px 5px 15px rgba(0,0,0,0.75);
+  margin: 0 auto;
+  max-width: 840px;
 }

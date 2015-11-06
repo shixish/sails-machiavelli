@@ -44,10 +44,13 @@ module.exports.routes = {
   '/api/:id': 'MachiavelliController.game',
 
   //'/test/': 'CoffeeController.index',
-  // '/': {
-  //   view: 'homepage'
-  // },
-  '/:id?': {
+  '/': {
+    view: 'homepage'
+  },
+  '/game/:game_id': {
+    view: 'homepage'
+  },
+  '/game/:game_id/:user_id': {
     view: 'homepage'
   },
 

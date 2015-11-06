@@ -25,6 +25,8 @@ var jsFilesToInject = [
   
   // Load sails.io before everything else
   'js/dependencies/sails.io.js',
+  'js/dependencies/underscore-min.js',
+  'js/dependencies/bootstrap-min.js',
 
   // Dependencies like jQuery, or Angular are brought in here
   'js/dependencies/**/*.js',
@@ -51,7 +53,8 @@ var jsFilesToInject = [
 // templates get spit out to the same file.  Be sure and check out `tasks/README.md`
 // for information on customizing and installing new tasks.
 var templateFilesToInject = [
-  'templates/**/*.html'
+  'templates/**/*.html',
+  'templates/**/*.jst'
 ];
 
 

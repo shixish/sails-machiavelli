@@ -1,7 +1,14 @@
+/*
+TODO:: NEED TO LEVERAGE MODEL AND DB SYSTEM IN ORDER TO USE SAILS MAIN FUNCTIONALITY...
+*/
+
+
 var cards = require('cards'),
 	uuid = require('node-uuid'),
 	GameStorage = {},
 	Deck = cards.Deck, Card = cards.Card, Pile = cards.Pile;
+
+var user_index = 0;
 
 function UserData(name){
 	var next_index = 0;
@@ -31,12 +38,16 @@ UserData.prototype.toJSON = function (){
 		"name": this.name,
 		"uuid": this.uuid, //This is temporary!
 		"hand": this.hand.toJSON(),
+		"cards": this.hand.length,
 	}
 }
 
 function GameData(){
 	var deck = new cards.DoubleDeck();
-	deck.shuffleAll();// Shuffle the deck 
+	deck.shuffleAll();// Shuffle the deck
+
+	this.started = false;
+	this.starting_cards = 7;
 
 	this.deck = deck;
 	this.uuid = uuid.v4();
@@ -45,6 +56,16 @@ function GameData(){
 	this.user_data = {};
 
 	GameStorage[this.uuid] = this;
+}
+GameData.prototype.dealCards = function (){
+	//give the user their starting cards
+	for (var u in this.user_data){
+		var user = this.user_data[u];
+		for (var i = 0; i < this.starting_cards; i++){
+			var card = this.deck.draw();
+			user.addCard(card);
+		}
+	}
 }
 GameData.prototype.dropCard = function (user, card_indexes, pile_id){
 	var pile;
@@ -99,54 +120,86 @@ GameData.prototype.piles = function (){
 GameData.prototype.toJSON = function(){
 	return {
 		"uuid": this.uuid,
+		"started": this.started,
 		"timestamp": this.timestamp,
 		"size": this.deck.size(),
 		"piles": this.piles(),
 		"users": this.users(),
 	}
 }
-function getGameData(id){
-	if (GameStorage[id]){
-		return GameStorage[id];
-	}else{//new game
-		throw new Error("No game data.");
-	}
-}
+// function getGameData(id){
+// 	if (GameStorage[id]){
+// 		return GameStorage[id];
+// 	}else{//new game
+// 		throw new Error("No game data.");
+// 	}
+// }
 function errorResponse(msg){
 	return {
-		'Error': msg,
+		'error': msg,
 	};
 }
 
 module.exports = {
 	game: function (req, res){
-		try{
-			var game = getGameData(req.param('id'));
-			return res.send(game.toJSON());
-		}catch(e){
-			return res.send(errorResponse(e.message));
-		}
+		Game.findOne({uuid: req.param('id')}).exec(function (err, game){
+			if (game){
+				return res.send(game.toJSON());
+			}else{
+				return res.send(errorResponse(err));
+			}
+		});
+		// try{
+		// 	var game = getGameData(req.param('id'));
+		// 	return res.send(game.toJSON());
+		// }catch(e){
+		// 	return res.send(errorResponse(e.message));
+		// }
 	},
 	create_game: function (req, res){
-		var game = new GameData();
-		return res.send(game.toJSON());
+		Game.create().exec(function (err, game){
+			// console.log('Created game with id ' + game.uuid);
+			return res.send(game.toJSON());
+		});
+		// var game = new GameData();
+		// return res.send(game.toJSON());
 		// return res.redirect('/api/' + game.uuid);
 	},
 	new_user: function (req, res){
+		var name = req.param('name');
+		if (name){
+			Game.findOne({uuid: req.param('id')}).exec(function (err, game){
+				// console.log(err, game);
+				if (game){
+					//game.addUser(name);
+					Player.create({'name': name}).exec(function(err, player){
+						if (player){
+							game.players.add(player);
+							return res.send(player.toJSON());
+						}else{
+							return res.send(errorResponse(err));
+						}
+					});
+				}else{
+					return res.send(errorResponse(err));
+				}
+			});
+		}
+
 		// if (!req.param('name')){
 
 		// }
-		try{
-			var game = getGameData(req.param('id')),
-				name = req.param('name'),
-				user = new UserData(name);
+		// try{
+		// 	var game = getGameData(req.param('id')),
+		// 		name = req.param('name'),
+		// 		user = new UserData(name);
 
-			game.addUser(user);
-			// this.addUser(new UserData('Jill'));
-			return res.send(user.toJSON());
-		}catch(e){
-			return res.send(errorResponse(e.message));
-		}
+		// 	game.addUser(user);
+		// 	// this.addUser(new UserData('Jill'));
+		// 	return res.send(user.toJSON());
+		// }catch(e){
+		// 	return res.send(errorResponse(e.message));
+		// }
 	},
 	// deck: function (req, res){
 	// 	var game = getGameData(req.param('id'));
@@ -156,15 +209,22 @@ module.exports = {
 	// 	return res.send(game.deck.toJSON());
 	// },
 	user: function (req, res){
-		try{
-			var game = getGameData(req.param('id')),
-				user = game.getUser(req.param('user_id'));
+		Player.findOne({'uuid': req.param('user_id')}).exec(function(err, player){
+			if (player){
+				return res.send(player.toJSON());
+			}else{
+				return res.send(errorResponse(err));
+			}
+		});
+		// try{
+		// 	var game = getGameData(req.param('id')),
+		// 		user = game.getUser(req.param('user_id'));
 
-			// var card = game.deck.draw();
-			return res.send(user.toJSON());
-		}catch(e){
-			return res.send(errorResponse(e.message));
-		}
+		// 	// var card = game.deck.draw();
+		// 	return res.send(user.toJSON());
+		// }catch(e){
+		// 	return res.send(errorResponse(e.message));
+		// }
 	},
 	draw: function (req, res){
 		try{
