@@ -38,6 +38,7 @@ module.exports.routes = {
   // '/api/:id': 'MachiavelliController.deck',
   // '/api/:id/:user_id/hand': 'MachiavelliController.hand',
   '/api/:id/new_user/:name': 'MachiavelliController.new_user',
+  '/api/:id/players': 'MachiavelliController.players',
   '/api/:id/:user_id/draw': 'MachiavelliController.draw',
   '/api/:id/:user_id/drop/:card_idx': 'MachiavelliController.drop',
   '/api/:id/:user_id': 'MachiavelliController.user',

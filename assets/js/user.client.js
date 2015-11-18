@@ -40,7 +40,7 @@ var User = Backbone.Model.extend({
   load: function(game, id, callback){
     io.socket.get('/api/'+game.get('uuid')+'/'+id+'/', function (data) {
       if (data.error){
-        callback(new Error(data));
+        callback(null, data.error);
       }else{
         callback(new User(data));
       }

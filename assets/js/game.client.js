@@ -2,11 +2,29 @@
  * GAME
  */
 var Game = Backbone.Model.extend({
+
+  noIoBind: false,
+  socket: window.io.socket,
+
+  initialize: function(obj){
+    console.log('initializing');
+    this.url =  '/api/'+obj.uuid+'/players';
+    if (!this.noIoBind) {
+      this.ioBind('add', function(){
+        console.log('derp');
+      }, this);
+      this.ioBind('update', function(){
+        console.log('derp');
+      }, this);
+      this.ioBind('destroy', function(){
+        console.log('derp');
+      }, this);
+    }
+  },
+
   addUser: function(name, callback){
     io.socket.get('/api/'+this.get('uuid')+'/new_user/'+name, function (data) {
-      var user = new User(data);
-      console.log(data, user);
-      callback(user);
+      callback(new User(data));
     });
   },
 },{
@@ -14,7 +32,7 @@ var Game = Backbone.Model.extend({
   create: function(callback){
     io.socket.get('/api/create', function (data) {
       if (data.error){
-        callback(new Error(data));
+        callback(null, data.error);
       }else{
         callback(new Game(data));
       }
@@ -23,7 +41,7 @@ var Game = Backbone.Model.extend({
   load: function(id, callback){
     io.socket.get('/api/'+id, function (data) {
       if (data.error){
-        callback(new Error(data));
+        callback(null, data.error);
       }else{
         callback(new Game(data));
       }

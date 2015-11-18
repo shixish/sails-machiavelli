@@ -1,9 +1,9 @@
 playingCards.card.defaults.imgPrefix = '/playingCards/';
 vex.defaultOptions.className = 'vex-theme-os';
 
-var Error = function(data){
-  this.message = data.error;
-}
+// var Error = function(data){
+//   this.message = data.error;
+// }
 
 window.location.game_id = function(){
   return window.location.pathname.split('/')[2];
@@ -15,194 +15,62 @@ window.location.user_id = function(){
 
 
 $(document).ready(function(){
-  var game, user;
+  io.socket.on("player", function(event){console.log(event);})
 
-  var $controls = $('#controls'),
-      $players = $('#players'),
-      $hand = $('#hand'),
-      $board = $('#board'),
-      $name = $('#name'),
-      $lobby = $('#lobby');
+  // var game, user;
 
-  /**
-   * UI FUNCTIONS
-   */
+  // var $controls = $('#controls'),
+  //     $players = $('#players'),
+  //     $hand = $('#hand'),
+  //     $board = $('#board'),
+  //     $name = $('#name'),
+  //     $lobby = $('#lobby');
 
-  $hand.on('click', '.playingCard', function(){
-    // console.log('derp');
-    var $this = $(this);
-    var index = $this.index();//$this.data('index')
-    this.remove();
-    user.dropCard(index, function(card, pile_state){
-      console.log("Dropped card:", card);
-      console.log("Board: ", pile_state);
-      // $card.appendTo($board);
-      // console.log($card);
-      // addCardToBoard(card);
-      updateBoard(pile_state);
-    });
-  });
+  // /**
+  //  * UI FUNCTIONS
+  //  */
 
-  // function loadGame(game_id, user_id){
-  //   Game.load(game_id, function(gobj){
-  //     if (gobj instanceof Error){
-  //       console.log("Game load error:", gobj.message);
-  //       vex.dialog.alert({
-  //         message: "Unable to load game data!", 
-  //         callback: function(){
-  //           newGame();
-  //         }
-  //       });
-  //     }else{
-  //       User.load(gobj, user_id, function(uobj){
-  //         if (uobj instanceof Error){
-  //           console.log("User load error:", uobj.message);
-  //           vex.dialog.alert({
-  //             message: "Unable to load user data!", 
-  //             callback: function(){
-  //               newGame();
-  //             }
-  //           });
-  //         }else{
-  //           window.game = game = gobj;
-  //           window.user = user = uobj;
-  //           initBoard();
-  //           console.log("Game state sucessfully loaded.", game, user);
-  //         }
-  //       });
-  //     }      
-  //     // $('<button>Get Game Data</button>').click(function(e){
-  //     //   game.getGameData();
-  //     // }).appendTo($controls);
+  // $hand.on('click', '.playingCard', function(){
+  //   // console.log('derp');
+  //   var $this = $(this);
+  //   var index = $this.index();//$this.data('index')
+  //   this.remove();
+  //   user.dropCard(index, function(card, pile_state){
+  //     console.log("Dropped card:", card);
+  //     console.log("Board: ", pile_state);
+  //     // $card.appendTo($board);
+  //     // console.log($card);
+  //     // addCardToBoard(card);
+  //     updateBoard(pile_state);
   //   });
-  // }
+  // });
 
-  // function newGame(){
-  //   Game.create(function(gobj){
-  //     window.game = game = gobj;
-  //     console.log("Game:", game);
-  //     window.history.pushState({},"", '/game/'+game.uuid);
-  //     newUser();
-  //   });
-  // }
+  // function initBoard(){
 
-  // function newGame(){
-  //   vex.dialog.open({
-  //     showCloseButton: false,
-  //     escapeButtonCloses: false,
-  //     overlayClosesOnClick: false,
-  //     message: 'Create a new game:',
-  //     input: "<input name=\"name\" type=\"text\" placeholder=\"Your Name\" required />",
-  //     buttons: [
-  //       $.extend({}, vex.dialog.buttons.YES, {
-  //         text: 'Create'
-  //       })
-  //     ],
-  //     callback: function(data) {
-  //       if (data.name){
-  //         createGame(data.name)
-  //       }
-  //     }
-  //   });
-  // }
-
-  // function newUser(){
-  //   vex.dialog.open({
-  //     showCloseButton: false,
-  //     escapeButtonCloses: false,
-  //     overlayClosesOnClick: false,
-  //     message: 'Joining game lobby. Please provide your name:',
-  //     input: "<input name=\"name\" type=\"text\" placeholder=\"Your Name\" required />",
-  //     buttons: [
-  //       $.extend({}, vex.dialog.buttons.YES, {
-  //         text: 'Create'
-  //       })
-  //     ],
-  //     callback: function(data) {
-  //       if (data.name){
-  //         game.addUser(data.name, function(uobj){
-  //           window.user = user = uobj;
-  //           console.log(user);
-  //           window.history.pushState({},"", '/game/'+game.uuid+'/'+user.uuid);
-  //           initBoard();
-  //         });
-  //       }
-  //     }
-  //   });
-  // }
-
-  // function createGame(name){
-  //   Game.create(function(_game){
-  //     window.game = game = _game;
-  //     console.log("Game:", game);
-  //     window.history.pushState({},"", '/game/'+game.uuid);
-  //     game.addUser(name, function(uobj){
-  //       window.user = user = uobj;
-  //       console.log(user);
-  //       window.history.pushState({},"", '/game/'+game.uuid+'/'+user.uuid);
-  //       initBoard();
+  //   $('<button>Draw a card</button>').click(function(e){
+  //     user.drawCard(function (card){
+  //       var $card = $(card.getHTML()).appendTo($hand);
   //     });
-  //   });
+  //   }).appendTo($controls);
+
+  //   $('<button>Get User Data</button>').click(function(e){
+  //     user.getUserData(user.uuid);
+  //     $hand.html(user.handHTML());
+  //   }).appendTo($controls);
+
+  //   // $('<button>Get Game Data</button>').click(function(e){
+  //   //   game.getGameData();
+  //   // }).appendTo($controls);
+
+  //   for (var u in game.users){
+  //     var name = game.users[u];
+  //     $players.append(name);
+  //   }
+
+  //   //initialize hand:
+  //   $hand.html(user.handHTML());
+  //   updateBoard();
   // }
-
-  function initBoard(){
-    // if (user.admin){
-    //   $('<button>Add Player</button>').click(function(e){
-    //     game.addUser(name, function(uobj){
-    //       window.user = user = uobj;
-    //       console.log(user);
-    //       window.history.pushState({},"", '/game/'+game.uuid+'/'+user.uuid);
-    //       initBoard();
-    //     });
-    //   }).appendTo($controls);
-    // }
-
-    if (!game.started){
-      // $lobby.show();
-      // window.lobby = $lobby = vex.dialog.open({
-      //   showCloseButton: false,
-      //   escapeButtonCloses: false,
-      //   overlayClosesOnClick: false,
-      //   message: 'New game lobby:',
-      //   input: '<div class="chat"></div>',
-      //   buttons: [
-      //     // $.extend({}, vex.dialog.buttons.YES, {
-      //     //   text: 'Ready'
-      //     // })
-      //   ],
-      //   callback: function(data) {
-      //     if (data.name){
-      //       createGame(data.name)
-      //     }
-      //   }
-      // });
-      App.newlobby(game);
-    }
-
-    $('<button>Draw a card</button>').click(function(e){
-      user.drawCard(function (card){
-        var $card = $(card.getHTML()).appendTo($hand);
-      });
-    }).appendTo($controls);
-
-    $('<button>Get User Data</button>').click(function(e){
-      user.getUserData(user.uuid);
-      $hand.html(user.handHTML());
-    }).appendTo($controls);
-
-    // $('<button>Get Game Data</button>').click(function(e){
-    //   game.getGameData();
-    // }).appendTo($controls);
-
-    for (var u in game.users){
-      var name = game.users[u];
-      $players.append(name);
-    }
-
-    //initialize hand:
-    $hand.html(user.handHTML());
-    updateBoard();
-  }
 
   function updateBoard(pile_state){
     if (pile_state)
@@ -220,58 +88,6 @@ $(document).ready(function(){
     }
   }
 
-  // function errorAlert(msg){
-  //   vex.dialog.alert({
-  //     message: msg, 
-  //     callback: function(){
-  //       newGame();
-  //     }
-  //   });
-  // }
-
-  // function loadGame(game_id, callback){
-  //   Game.load(game_id, function(gobj){
-  //     if (gobj instanceof Error){
-  //       console.log("Game load error:", gobj.message);
-  //       errorAlert("Unable to load game data!");
-  //     }else{
-  //       window.game = game = gobj;
-  //       callback(gobj);
-  //     }
-  //   });
-  // }
-
-  // function loadUser(user_id, callback){
-  //   User.load(game, user_id, function(uobj){
-  //     if (uobj instanceof Error){
-  //       console.log("User load error:", uobj.message);
-  //       errorAlert("Unable to load user data!");
-  //     }else{
-  //       window.user = user = uobj;
-  //       initBoard();
-  //       callback(uobj);
-  //     }
-  //   });
-  // }
-
-  // //Initialize game state:
-  // var game_id = window.location.game_id(),
-  //     user_id = window.location.user_id();
-
-  // if (game_id){
-  //   loadGame(game_id, function(){//on success
-  //     console.log("Game sucessfully loaded:", game);
-  //     if (user_id){
-  //       loadUser(user_id, function(){
-  //         console.log("User sucessfully loaded:", user);
-  //       });
-  //     }else{
-  //       newUser();
-  //     }
-  //   });
-  // }else{
-  //   newGame();
-  // }
 
   var LobbyView = Backbone.View.extend({
     // el: $lobby,
@@ -283,14 +99,14 @@ $(document).ready(function(){
     template: function(obj){
       // this.$form = $('<form>');
       var html = 'Waiting in the lobby. There will eventually be a chat in here where you can talk to your bros.<h3>People in lobby:</h3>';
-      html += '<div class="people">';
-      if (obj.users){
-        for (var u in obj.users){
-          console.log(obj.users[u]);
-          html += obj.users[u];
+      html += '<ul class="people">';
+      if (obj.players){
+        for (var p in obj.players){
+          console.log(obj.players[p]);
+          html += '<li>'+obj.players[p].name+'</li>';
         }
       }
-      html += '</div>';
+      html += '</ul>';
       return html;
     },
     //_.template($('#item-template').html()),
@@ -393,27 +209,28 @@ $(document).ready(function(){
 
     loadGame: function(game_id, callback){
       var app = this;
-      Game.load(game_id, function(gobj){
-        if (gobj instanceof Error){
-          console.log("Game load error:", gobj.message);
-          app.errorAlert("Unable to load game data!");
-        }else{
+      Game.load(game_id, function(gobj, err){
+        if (gobj){
           app.initGame(gobj);
           callback(gobj);
+        }else{
+          console.log("Game load error:", err);
+          app.errorAlert("Unable to load game data!");
+          app.newGame();
         }
       });
     },
 
     loadUser: function(user_id, callback){
       var app = this;
-      User.load(app.game, user_id, function(uobj){
-        if (uobj instanceof Error){
-          console.log("User load error:", uobj.message);
-          app.errorAlert("Unable to load user data!");
-        }else{
+      User.load(app.game, user_id, function(uobj, err){
+        if (uobj){
           window.user = app.user = uobj;
           // initBoard();
           callback(uobj);
+        }else{
+          console.log("User load error:", err);
+          app.errorAlert("Unable to load user data!");
         }
       });
     },
@@ -463,7 +280,7 @@ $(document).ready(function(){
         ],
         callback: function(data) {
           if (data.name){
-            callback();
+            callback(data.name);
           }else{
             app.errorAlert('Invalid Name');
             app.getUserName(callback);
