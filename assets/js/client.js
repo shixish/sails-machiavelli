@@ -15,7 +15,9 @@ window.location.user_id = function(){
 
 
 $(document).ready(function(){
-  io.socket.on("player", function(event){console.log(event);})
+  io.socket.on("player", function(event){
+    console.log('player event', event);
+  });
 
   // var game, user;
 
@@ -72,27 +74,35 @@ $(document).ready(function(){
   //   updateBoard();
   // }
 
-  function updateBoard(pile_state){
-    if (pile_state)
-      game.updatePiles(pile_state);
-    html = '';
-    $board.html('');
-    for (var i in game.piles){
-      var $pile = $('<ul id="pile-'+i+'" class="pile">');
-      for (var c in game.piles[i]){
-        var card = game.piles[i][c];
-        // console.log(card);
-        $('<li>').append(card.getHTML()).appendTo($pile);
-      }
-      $pile.appendTo($board);
-    }
-  }
+  // function updateBoard(pile_state){
+  //   if (pile_state)
+  //     game.updatePiles(pile_state);
+  //   html = '';
+  //   $board.html('');
+  //   for (var i in game.piles){
+  //     var $pile = $('<ul id="pile-'+i+'" class="pile">');
+  //     for (var c in game.piles[i]){
+  //       var card = game.piles[i][c];
+  //       // console.log(card);
+  //       $('<li>').append(card.getHTML()).appendTo($pile);
+  //     }
+  //     $pile.appendTo($board);
+  //   }
+  // }
 
 
   var LobbyView = Backbone.View.extend({
     // el: $lobby,
     tagName:  "div",
     id: 'lobby',
+
+    events: {
+      "click button.start" : "start",
+    },
+
+    start: function(){
+      alert('ok starting');
+    },
 
     // template: JST['assets/templates/lobby.jst'],
 
@@ -107,6 +117,7 @@ $(document).ready(function(){
         }
       }
       html += '</ul>';
+      html += '<button class="start">start</button>';
       return html;
     },
     //_.template($('#item-template').html()),

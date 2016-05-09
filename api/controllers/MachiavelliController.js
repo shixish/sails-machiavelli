@@ -164,7 +164,7 @@ module.exports = {
   },
   players: function (req, res){
     if (!req.isSocket) {
-      return res.badRequest('Only a client socket can subscribe to Louies.  You, sir, appear to be something... _else_.');
+      return res.badRequest('Only a client socket can subscribe.');
     }
 
     // Let's say our client socket has a problem with people named "louie".
@@ -221,9 +221,10 @@ module.exports = {
     // return res.redirect('/api/' + game.uuid);
   },
   new_user: function (req, res){
-    var name = req.param('name');
+    var name = req.param('name'),
+        game_id = req.param('id');
     if (name){
-      Game.findOne({uuid: req.param('id')}).exec(function (err, game){
+      Game.findOne({uuid: game_id}).exec(function (err, game){
         // console.log(err, game);
         if (game){
           //game.addUser(name);
